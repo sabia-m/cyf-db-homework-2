@@ -2,11 +2,28 @@ const dotenv = require('dotenv')
 const express = require('express')
 const mongodb = require('mongodb')
 
+const { getPutBodyIsAllowed } = require('./util')
+
 dotenv.config()
 
 const app = express()
+app.use(express.json())
+
 const port = process.env.PORT || 3000
+
 const uri = process.env.DATABASE_URI
+
+app.post('/api/books', function(request, response) {
+  // Make this work!
+})
+
+app.delete('/api/books/:id', function(request, response) {
+  // Make this work, too!
+})
+
+app.put('/api/books/:id', function(request, response) {
+  // Also make this work!
+})
 
 app.get('/api/books', function(request, response) {
   const client = new mongodb.MongoClient(uri)
@@ -39,7 +56,6 @@ app.get('/api/books/:id', function(request, response) {
   try {
     id = new mongodb.ObjectID(request.params.id)
   } catch (error) {
-    // console.log(error)
     response.sendStatus(400)
     return
   }
@@ -66,8 +82,16 @@ app.get('/', function(request, response) {
   response.sendFile(__dirname + '/index.html')
 })
 
+app.get('/books/new', function(request, response) {
+  response.sendFile(__dirname + '/new-book.html')
+})
+
 app.get('/books/:id', function(request, response) {
   response.sendFile(__dirname + '/book.html')
+})
+
+app.get('/books/:id/edit', function(request, response) {
+  response.sendFile(__dirname + '/edit-book.html')
 })
 
 app.get('/authors/:name', function(request, response) {
