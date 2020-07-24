@@ -6,6 +6,8 @@ const { getPutBodyIsAllowed } = require('./util')
 
 dotenv.config()
 
+console.log(process.env)
+
 const app = express()
 app.use(express.json())
 
@@ -14,13 +16,88 @@ const port = process.env.PORT || 3000
 const uri = process.env.DATABASE_URI
 
 app.post('/api/books', function(request, response) {
+  const client = new mongodb.MongoClient(uri);
+  
+  client.connect(function () {
+    const db = client.db("literature");
+    const collection = db.collection("books");
+      const newObject = {}
+
+      var ObjectId = mongodb.ObjectID
+      var id = new ObjectId();
+      console.log(id)
+      newObject._id = id
+
+        console.log(newObject._id)
+
+      if (request.query.title === ""){
+        newObject.title = request.query.title }
+        else {
+          response.send(400)
+        }
+    
+      if (request.query.author === ""){
+        newObject.author = request.query.author}
+        else {
+          response.send(400)
+        }
+
+      if (request.query.author_birth_year === ""){
+      newObject.author_birth_year = Number(request.query.author_birth_year)
+    }
+    else {
+      response.send(400)
+    }
+
+    if (request.query.author_death_year === ""){
+    newObject.author_death_year = Number(request.query.author_death_year)
+  } else {
+    response.send(400)
+  }
+
+  if (request.query.url === ""){
+  newObject.url = request.query.url
+} else {
+  response.send(400)
+}
+
+  console.log(newObject)
+    collection.insertOne(newObject, function (error, result) {
+      response.send(error || result.ops[0]);
+      console.log("Book has been added!")
+      client.close();
+    });
+  });
+});
   // Make this work!
-})
 
 app.delete('/api/books/:id', function(request, response) {
-  // Make this work, too!
-})
+  const client = new mongodb.MongoClient(uri);
+  
+  client.connect(function () {
+    const db = client.db("literature");
+    const collection = db.collection("books");
+    let id = undefined
+    let checkID = request.params.id
 
+    if (mongodb.ObjectId.isValid(checkID)) {
+      id = new mongodb.ObjectId(checkID)
+    } else {
+      response.status(400).send("This ID is invalid")
+    }
+    const searchObject = { _id : id };
+
+    collection.deleteOne(searchObject, function (error, result) {
+       if (result.deletedCount) {
+        response.status(204).send("Successfully deleted!");
+      } else if(result._id !== id) {
+        response.status(404).send("Sorry, this ID does not exist.");
+      }
+      client.close();
+    });
+  });
+})
+ 
 app.put('/api/books/:id', function(request, response) {
   // Also make this work!
 })
